@@ -72,7 +72,10 @@ sims <- fair %>%
 
 View(sims)
 
-## Plotting PV x EV
+
+# Plotting EV vs PV -------------------------------------------------------
+
+
 library(tidyr)
 
 sims %>%
@@ -83,6 +86,7 @@ sims %>%
   labs(y="EV and PV", x="Type")
   
 
+# Scatter --------------------------------------------------------------
 
 ggplot(sims, aes(x=expected_value, y=predicted_value)) + 
   geom_point(alpha=0.2) +
@@ -95,54 +99,18 @@ ggplot(sims, aes(x=expected_value, y=predicted_value)) +
   labs(y="PV", x="EV")
 
 
-## Slim
+
+# Slimming ----------------------------------------------------------------
+
 sims.slimmed <- qi_slimmer(sims)
 View(sims.slimmed)
 
-# By default, qi_slimmer uses Expected Values. That is the default:
-sims.slimmed <- qi_slimmer(sims, qi_type = "pv", ci=0.95)
-
-## Sims slimmed
-ggplot(sims.slimmed, aes(GROWTH, qi_ci_median)) +
-  geom_ribbon(aes(ymin = qi_ci_min, ymax = qi_ci_max), alpha = 0.3) +
-  geom_line() + 
-  geom_smooth(data=fair, aes(x=GROWTH, y=VOTE), method="lm") +
-  geom_point(data=fair, aes(x=GROWTH, y=VOTE)) +
-  ylab('Expected Vote') 
 
 
-ggplot(fair) +
-  geom_point(aes(y=VOTE, x=GROWTH)) +
-  geom_
 
+# Comparing ---------------------------------------------------------------
 
-## Add rugplot
-ggplot(sims.slimmed, aes(GROWTH, qi_ci_median)) +
-  geom_ribbon(aes(ymin = qi_ci_min, ymax = qi_ci_max), alpha = 0.3) +
-  geom_line() + 
-  geom_rug(data=fair, aes(GROWTH, VOTE), sides = "b", alpha = 0.5, position = "jitter") +
-  ylab('Expected Vote') 
-
-
-##
-
-corr <- vector(mode = "double", length = 1000)
-
-for(i in 1:1000) {
-set.seed(i)
-## Generate a dataframe
-sims <- fair %>% 
-  zelig(VOTE ~ GROWTH * GOODNEWS + INFLATION, model = 'ls', data = .) %>%
-  setx(GROWTH = -10:10) %>%
-  sim() %>%
-  zelig_qi_to_df()  
-  
-corr[i] <- cor(sims$expected_value, sims$predicted_value)
-}
-
-qplot(corr) + theme_minimal()
-
-
+## YHAT
 library(broom)
 model <- lm(data = fair, VOTE ~ GROWTH * GOODNEWS + INFLATION)
 
@@ -150,7 +118,7 @@ model %>%
   augment_columns(data=fair) %>% 
   ggplot(aes(x=GROWTH, y=.fitted)) +
   geom_point() +
-  geom_smooth(method="lm", se=F) +
+  geom_smooth(method="lm") +
   ylab('Yhat') +
   scale_y_continuous(limits=c(35,70)) +
   theme_minimal()
