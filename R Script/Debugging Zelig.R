@@ -1,23 +1,41 @@
 # Debugging Zelig
 
+library(Zelig)
+library(Zeligchoice)
+library(dplyr)
+library(haven)
+
 # Debbuging zelig ---------------------------------------------------------
 
 ## Generate a dataframe
-zfair <- fair %>% 
-  zelig(VOTE ~ GROWTH * GOODNEWS + INFLATION, model = 'ls', data = .)
-
+fair %>% 
+  #   estsimp reg Y X1 X2 X1*X2
+  zelig(VOTE ~ GROWTH * GOODNEWS + INFLATION, model = 'ls', data = .) %>% 
+  #   setx mean /* Set X’s to their means. */
+  setx(GROWTH = mean(fair$GROWTH)) %>% 
+  #   simqi /* Report Pr(Y=1) conditional on the X’s */
   sim() %>%
-  zelig_qi_to_df()
+  zelig_qi_to_df() 
+
+## Vary growth
+zfair <- fair %>% 
+  #   estsimp reg Y X1 X2 X1*X2
+  zelig(VOTE ~ GROWTH * GOODNEWS + INFLATION, model = 'ls', data = .) %>% 
+  #   setx mean /* Set X’s to their means. */
+  setx(GROWTH = -10:10) %>% 
+  #   simqi /* Report Pr(Y=1) conditional on the X’s */
+  sim() %>%
+  zelig_qi_to_df() 
 
 
-## Set x
+# Set X -------------------------------------------------------------------
 
-## Cria uma copia do modelo colocando os valores para simulação 
+# Cria uma copia do modelo colocando os valores para simulação 
 
  # salva os objetos zelig em obj
   obj = zfair
  # cria uma copia
-  x5 <- obj$copy()
+  copia <- obj$copy()
  # lista de valores
   s <- list(GROWTH = -10:10)
   # controle para número de argumentos
@@ -31,41 +49,30 @@ zfair <- fair %>%
   }
   # estabelece os valores
   if (max(hold) > 1) {
-    x5$setrange(GROWTH = -10:10)
+    copia$setrange(GROWTH = -10:10)
   } else {
-    x5$setx(GROWTH = -10:10)
+    copia$setx(GROWTH = -10:10)
   } 
   # retorna o objeto
-  x5
+  copia
 
+# Simulation --------------------------------------------------------------
 
-## Sim
-obj <- sims
+## Object
+obj2 <- copia
 
-function (obj, x, x1, y = NULL, num = 1000, bootstrap = F, bootfn = NULL, 
-          cond.data = NULL, ...)
+## Number  
+num = 1000
+ 
+## Copy
+s5 <- obj2$copy()
+
+## Simulate
+s5$sim(num = num)
+
+##Print
+s5
   
-{
-  
-  
-  if (!missing(x1)) {
-    s15 <- x1$copy()
-    if (!is.null(s15$setx.out$x)) {
-      s5$setx.out$x1 <- s15$setx.out$x
-      s5$bsetx1 <- TRUE
-    }
-    if (!is.null(s15$setx.out$range)) {
-      s5$range1 <- s15$range
-      s5$setx.out$range1 <- s15$setx.out$range
-      s5$bsetrange1 <- TRUE
-    }
-  }
-  if (missing(x)) 
-    s5 <- obj$copy()
-  s5$sim(num = num)
-  return(s5)
-}
-
 
 
 
