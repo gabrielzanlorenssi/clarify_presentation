@@ -26,7 +26,7 @@ library(ggplot2)
 library(haven)
 
 ## must be in the working directory
-fair <- read_dta("./Fair_complete.dta")
+fair <- read_dta("Data/Fair_complete.dta")
 
 ## set seed
 seed(1234)
@@ -102,10 +102,10 @@ ggplot(sims, aes(x=expected_value, y=predicted_value)) +
 
 # Slimming ----------------------------------------------------------------
 
-sims.slimmed <- qi_slimmer(sims)
+## Summarizes the simulations, returning a median of the qi 
+
+sims.slimmed <- qi_slimmer(sims, qi_type = "ev")
 View(sims.slimmed)
-
-
 
 
 # Comparing ---------------------------------------------------------------
@@ -124,14 +124,21 @@ model %>%
   theme_minimal()
 
 
-# By default, qi_slimmer uses Expected Values. That is the default:
+# By default, qi_slimmer uses Expected Values. 
 sims.slimmed <- qi_slimmer(sims, qi_type = "ev", ci=0.95)
 
-## Sims slimmed
-ggplot(sims.slimmed, aes(GROWTH, qi_ci_median)) +
+ggplot(sims.slimmed, aes(x=GROWTH, y=qi_ci_median)) +
   geom_ribbon(aes(ymin = qi_ci_min, ymax = qi_ci_max), alpha = 0.3) +
   geom_line() + 
   ylab('Expected Vote') +
   scale_y_continuous(limits=c(35,70))
 
+## You can choose PV instead
+sims.slimmed <- qi_slimmer(sims, qi_type = "pv", ci=0.95)
+
+ggplot(sims.slimmed, aes(x=GROWTH, y=qi_ci_median)) +
+  geom_ribbon(aes(ymin = qi_ci_min, ymax = qi_ci_max), alpha = 0.3) +
+  geom_line() + 
+  ylab('Expected Vote') +
+  scale_y_continuous(limits=c(35,70))
 

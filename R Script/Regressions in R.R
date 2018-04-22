@@ -32,13 +32,13 @@ set.seed(1234)
 
 # Open Fair Dataset -------------------------------------------------------
 
-## must be in the working directory
-fair <- read_dta("./Fair_complete.dta")
+## the code assumes that you are in the directory where the folder "Data" is located
+fair <- read_dta("Data/Fair_complete.dta")
 
 ## check working directory
 getwd()
 
-## set a new working directory
+## set a new working directory if necessary
 setwd()
 
 # Overview ----------------------------------------------------------------
